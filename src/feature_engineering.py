@@ -6,9 +6,6 @@ import cv2
 import numpy as np
 
 
-global allDesc
-
-
 class HOGGenerator:
     def __init__(self, winSize=(36, 256), blockSize=(8, 16), blockStride=(4, 8), cellSize=(4, 8), nBins=9,
                  derivAperture=1, winSigma=4., histogramNormType=0, L2HysThreshold=2.0000000000000001e-01,
@@ -22,12 +19,43 @@ def initializeCV2():
     return HOGGenerator(winSize=(256, 128), blockSize=(16, 16), blockStride=(8, 8), cellSize=(8, 8))
 
 
-def processMatrix(hog, path, file, i, claz):
-    img = cv2.imread(join(path, file), 0)
-    desc = hog.hog.compute(img)
-    desc = np.append(desc, claz)
-    allDesc[i] = desc
-    pass
+class FeatureEngineering:
+    def __init__(self):
+        self.__pos = None
+        self.__neg = None
+        self.__allDesc = None
+        self.__negFiles = None
+        self.__posFiles = None
+        self.__hog = None
+
+    def setValues(self, pos, neg):
+        self.__pos = pos
+        self.__neg = neg
+
+        self.__negFiles = [f for f in listdir(self.__neg) if isfile(join(self.__neg, f))]
+        self.__posFiles = [f for f in listdir(self.__pos) if isfile(join(self.__pos, f))]
+
+        self.__allDesc = np.empty([len(self.__negFiles) + len(self.__posFiles), 16741])
+
+    def doFeatureEngineering(self):
+        self.__hog = initializeCV2()
+        i = 0
+        for posFile in self.__posFiles:
+            self.processMatrix(self.__pos, posFile, i, 1)
+            i += 1
+
+        for negFile in self.__negFiles:
+            self.processMatrix(self.__neg, negFile, i, 0)
+            i += 1
+
+        np.savetxt("trainData.csv", self.__allDesc, delimiter=',', newline='\n')
+
+    def processMatrix(self, path, file, i, claz):
+        img = cv2.imread(join(path, file), 0)
+        desc = self.__hog.hog.compute(img)
+        desc = np.append(desc, claz)
+        self.__allDesc[i] = desc
+        pass
 
 
 def main():
@@ -44,25 +72,10 @@ def main():
         parser.print_help()
         exit()
 
-    negFiles = [f for f in listdir(args.neg) if isfile(join(args.neg, f))]
-    posFiles = [f for f in listdir(args.pos) if isfile(join(args.pos, f))]
+    fe = FeatureEngineering()
+    fe.setValues(args.pos, args.neg)
+    fe.doFeatureEngineering()
 
-    hog = initializeCV2()
-    allDesc = np.empty([len(negFiles) + len(posFiles), 16741])
-
-    i = 0
-
-    for posFile in posFiles:
-        processMatrix(hog, args.pos, posFile, i, 1)
-        i += 1
-
-    for negFile in negFiles:
-        processMatrix(hog, args.neg, negFile, i, 0)
-        i += 1
-
-    np.savetxt("trainData.csv", allDesc, delimiter=',' ,newline='\n')
-
-    pass
 
 if __name__ == '__main__':
     main()
