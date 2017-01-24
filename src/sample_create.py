@@ -3,7 +3,56 @@ from os import listdir
 from os.path import isfile, isdir, join
 
 import cv2
+import numpy as np
 import src.utils as utils
+
+
+class SampleCreate:
+    def __init__(self):
+        self.__emptyImg = None
+        self.__args = None
+        self.__permitAngles = None
+        self.__permitScales = None
+        self.__pos = None
+        self.__neg = None
+
+    def setValues(self, pos, neg, permitAngles=[-15, -5, 5, 15], permitScales=[0.5, 0.6, 0.8, 0.9]):
+        self.__pos = pos
+        self.__neg = neg
+        self.__permitAngles = permitAngles
+        self.__permitScales = permitScales
+
+    def readFilesAndCreateSamples(self):
+        negFiles = [f for f in listdir(self.__neg) if isfile(join(self.__neg, f))]
+        posFiles = [f for f in listdir(self.__pos) if isfile(join(self.__pos, f))]
+
+        for posFile in posFiles:
+            self.processMatrix(self.__pos, posFile, self.__permitAngles, self.__permitScales)
+
+        for negFile in negFiles:
+            self.processMatrix(self.__neg, negFile, self.__permitAngles, self.__permitScales)
+
+    def __createEmptyImg(self, img):
+        self.__emptyImg = np.zeros(img.shape[:2])
+        self.__emptyImg.fill(255)
+
+    def processMatrix(self, path, file, permitAngles, permitScales):
+        img = cv2.imread(join(path, file), 0)
+
+        if self.__emptyImg is None:
+            self.__createEmptyImg(img)
+
+        for permitAngle in permitAngles:
+            newImg = utils.rotate(img, permitAngle, color=(255, 255, 255))
+            cv2.imwrite(join(path, 'rot' + str(permitAngle) + file), newImg)
+
+        for permitScale in permitScales:
+            (h, w) = img.shape[:2]
+            h = int(h * permitScale)
+            newImg = utils.resize(img, h * 2, h)
+            embedImg = self.__emptyImg.copy()
+            embedImg[:newImg.shape[0], :newImg.shape[1]] = newImg
+            cv2.imwrite(join(path, 'scale' + str(permitScale) + file), embedImg)
 
 
 def main():
@@ -22,39 +71,11 @@ def main():
         parser.print_help()
         exit()
 
-    negFiles = [f for f in listdir(args.neg) if isfile(join(args.neg, f))]
-    posFiles = [f for f in listdir(args.pos) if isfile(join(args.pos, f))]
-
-    permitAngles = args.angles if args.angles is not None else [-15, -5, 5, 15]
-    permitScales = args.scales if args.scales is not None else [0.5, 0.6, 0.8, 0.9]
-    global permitAngles
+    sc = SampleCreate()
+    sc.setValues(args.pos, args.neg)
+    sc.readFilesAndCreateSamples()
 
     # Rotation & Scale Variance
-    i = 0
-    for posFile in posFiles:
-        img = cv2.imread(join(args.pos, posFile), 0)
-        for permitAngle in permitAngles:
-            newImg = utils.rotate(img, permitAngle, color=(255, 255, 255))
-            cv2.imwrite(join(args.pos, 'rot' + str(permitAngle) + posFile), newImg)
-
-        for permitScale in permitScales:
-            (h, w) = img.shape[:2]
-            h = int(h*permitScale)
-            newImg = utils.resize(img, h*2, h)
-            cv2.imwrite(join(args.pos, 'scale' + str(permitScale) + posFile), newImg)
-
-    i = 0
-    for negFile in negFiles:
-        img = cv2.imread(join(args.neg, negFile), 0)
-        for permitAngle in permitAngles:
-            newImg = utils.rotate(img, permitAngle, color=(255, 255, 255))
-            cv2.imwrite(join(args.neg, 'rot' + str(permitAngle) + negFile), newImg)
-
-        for permitScale in permitScales:
-            (h, w) = img.shape[:2]
-            newImg = utils.resize(img, int(w*permitScale), int(h*permitScale))
-            cv2.imwrite(join(args.neg, 'scale' + str(permitScale) + negFile), newImg)
-
 
 if __name__:
     main()
