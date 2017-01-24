@@ -26,7 +26,7 @@ def main():
     posFiles = [f for f in listdir(args.pos) if isfile(join(args.pos, f))]
 
     permitAngles = args.angles if args.angles is not None else [-15, -5, 5, 15]
-    permitScales = args.scales if args.scales is not None else [0.5, 0.6, 0.7, 0.8, 0.9]
+    permitScales = args.scales if args.scales is not None else [0.5, 0.6, 0.8, 0.9]
     global permitAngles
 
     # Rotation & Scale Variance
@@ -39,7 +39,8 @@ def main():
 
         for permitScale in permitScales:
             (h, w) = img.shape[:2]
-            newImg = utils.resize(img, int(w*permitScale), int(h*permitScale))
+            h = int(h*permitScale)
+            newImg = utils.resize(img, h*2, h)
             cv2.imwrite(join(args.pos, 'scale' + str(permitScale) + posFile), newImg)
 
     i = 0
