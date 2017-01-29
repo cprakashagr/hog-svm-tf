@@ -1,5 +1,7 @@
 # Project Specific Files:
 *.csv
+checkpoint
+hogNsvmModel*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
