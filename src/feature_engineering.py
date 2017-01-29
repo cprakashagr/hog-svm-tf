@@ -37,7 +37,7 @@ class FeatureEngineering:
 
         self.__allDesc = np.empty([len(self.__negFiles) + len(self.__posFiles), 16741])
 
-    def doFeatureEngineering(self):
+    def doFeatureEngineering(self, save=True):
         self.__hog = initializeCV2()
         i = 0
         for posFile in self.__posFiles:
@@ -45,10 +45,13 @@ class FeatureEngineering:
             i += 1
 
         for negFile in self.__negFiles:
-            self.processMatrix(self.__neg, negFile, i, 0)
+            self.processMatrix(self.__neg, negFile, i, -1)
             i += 1
 
-        np.savetxt("trainData.csv", self.__allDesc, delimiter=',', newline='\n')
+        if save:
+            np.savetxt("trainData.csv", self.__allDesc, delimiter=',', newline='\n')
+
+        # Call SVM
 
     def processMatrix(self, path, file, i, claz):
         img = cv2.imread(join(path, file), 0)

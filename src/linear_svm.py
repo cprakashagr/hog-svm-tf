@@ -46,7 +46,7 @@ class SVM:
                 print('Initialized!')
                 print('Training.')
 
-            for step in iter(range(1 * self.__trainSize // BATCH_SIZE)):
+            for step in iter(range(self.__flags.ne * self.__trainSize // BATCH_SIZE)):
                 if verbose:
                     print(step, end=":  ")
 
@@ -68,6 +68,9 @@ class SVM:
 
             print("Accuracy on train:", accuracy.eval(
                 feed_dict={x: self.__trainData, y: self.__trainLabels}))
+
+            saver = tf.train.Saver()
+            saver.save(s, 'hogNsvmModel')
 
     def __extractData(self):
         fileData = np.loadtxt(fname=self.__flags.train, delimiter=',')
