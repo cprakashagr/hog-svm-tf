@@ -12,7 +12,8 @@ The project has 3 modules (for now):
 this will generate more sample data for training.
 2. `feature_engineering` - It generates the hog descriptors and save the data to be used for training.
 3. `linear_svm` - It is a generic linear SVM implementation. It uses the training data generated in last step
-and creates a tensorflow model.
+and creates a tensorflow model. After creating a tensorflow model, save the model.
+4. `eval_image.py` - It evalutaes a folder of image according to the tensorflow checkpoint.
 
 **Usage**
 -
@@ -25,10 +26,16 @@ feature_engineering.py
 
 linear_svm.py
 > python3 linear_svm.py --train trainData.csv --svmC 1 --verbose True --num_epochs 10
-```
 
+eval_image.py
+> python3 eval_image.py -i /path/to/imagefoler
+``` 
 **TODO**
 
 1. More samples creation based on brightness and contrast alteration
 2. Support for Keras and OpenCL
 3. Visualisation module for the tensorflow model 
+
+**Contribution**
+1. [Frankgu](http://github.gdf.name)
+  - add the evaluation program to the project

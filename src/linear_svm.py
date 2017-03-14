@@ -54,7 +54,7 @@ class SVM:
                 batch_labels = self.__trainLabels[offset:(offset + BATCH_SIZE)]
                 train_step.run(feed_dict={x: batch_data, y: batch_labels})
                 print('loss: ', svm_loss.eval(feed_dict={x: batch_data, y: batch_labels}))
-
+                print('labels: ', batch_labels)
                 if verbose and offset >= self.__trainSize - BATCH_SIZE:
                     pass
 
