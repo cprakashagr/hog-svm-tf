@@ -4,6 +4,7 @@ from os.path import isfile, isdir, join
 
 import cv2
 import numpy as np
+import tensorflow as tf
 
 
 class HOGGenerator:
@@ -26,6 +27,8 @@ class Features:
     self.__hog = initializeCV2()
     # Extract the hog feature
     imageFeatures = self._processMatrix(input, inputFile)
+    imageFeatures = np.squeeze(imageFeatures)
+    imageFeatures = np.expand_dims(imageFeatures, axis=0)
     return imageFeatures
 
   def _processMatrix(self, path, file):
@@ -36,17 +39,17 @@ class Features:
     return desc
 
 class SVM:
-  def __init__(self, flags):
+  def __init__(self):
     self.__trainData = None
-    self.__trainFeatures = None
+    self.__trainFeatures = 16740
 
   def predict(self, input):
     x = tf.placeholder("float", shape=[None, self.__trainFeatures])
 
-    W = tf.Variable(tf.zeros([self.__trainFeatures, 1]))
-    b = tf.Variable(tf.zeros([1]))
+    W = tf.Variable(tf.zeros([self.__trainFeatures, 1]), name='weights')
+    b = tf.Variable(tf.zeros([1]), name='biases')
     y_raw = tf.matmul(x, W) + b
-    # get the predict result
+    # Get the predict result
     predict = tf.sign(y_raw)
 
     # Add ops to restore all the variable
@@ -54,7 +57,7 @@ class SVM:
 
     with tf.Session() as sess:
       # Restore variable from disk
-      saver.restore(sess, 'hogNsvmModel')
+      saver.restore(sess, './hogNsvmModel')
       print('Restore from model')
       # Get all the file path
       inputFiles = [f for f in listdir(input) if isfile(join(input, f))]
@@ -64,8 +67,9 @@ class SVM:
         # Extract the single image feature
         feature = fe.featureExtract(input, inputFile)
         # Run the predict ops to get the svm prediction result on this image
-        result = sess.run(predict, feed_dict={x: feature})
-        print("filename: %s | result: %d " % (inputFile, result))
+        result = sess.run([predict], feed_dict={x: feature})
+        if result != -1:
+          print("filename: %s | result: %d " % (inputFile, result))
 
 
 def main():
@@ -73,20 +77,17 @@ def main():
   parser.add_argument("-i", "--input", help="Images Location", type=str)
   args = parser.parse_args()
 
-  if args.i is None:
+  if args.input is None:
     parser.print_usage()
     exit()
 
-  if not isdir(args.i):
+  if not isdir(args.input):
     parser.print_help()
     exit()
 
   # Predict the image
   svm = SVM()
-  svm.predict(args.i)
-  # Extract the feature of the image
-  fe = EvalImages(args.i)
-  fe.eval()
+  svm.predict(args.input)
 
 
 if __name__ == '__main__':
