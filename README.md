@@ -1,4 +1,4 @@
-#**hog-svm-tf**
+# **hog-svm-tf**
 [Histogram of oriented gradients](https://en.wikipedia.org/wiki/Histogram_of_oriented_gradients) is a feature descriptor used in image processing and 
 has recently got a lot of attention for the purpose of object detection.
 
@@ -37,5 +37,6 @@ eval_image.py
 3. Visualisation module for the tensorflow model 
 
 **Contribution**
+-
 1. [Frankgu](http://github.gdf.name)
   - add the evaluation program to the project
