@@ -69,7 +69,7 @@ class SVM:
         # Run the predict ops to get the svm prediction result on this image
         result = sess.run([predict], feed_dict={x: feature})
         if result != -1:
-          print("filename: %s | result: %d " % (inputFile, result))
+          print("filename: %s | result: %s " % (inputFile, result))
 
 
 def main():
