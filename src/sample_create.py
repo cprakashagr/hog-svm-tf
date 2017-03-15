@@ -4,7 +4,7 @@ from os.path import isfile, isdir, join
 
 import cv2
 import numpy as np
-import src.utils as utils
+import utils
 
 
 class SampleCreate:

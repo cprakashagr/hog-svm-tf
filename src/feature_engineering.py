@@ -12,7 +12,7 @@ class HOGGenerator:
                  gammaCorrection=0, nLevels=64):
 
         self.hog = cv2.HOGDescriptor(winSize, blockSize, blockStride, cellSize, nBins, derivAperture,
-                                     winSigma,histogramNormType, L2HysThreshold, gammaCorrection, nLevels)
+                                     winSigma, histogramNormType, L2HysThreshold, gammaCorrection, nLevels)
 
 
 def initializeCV2():
@@ -50,8 +50,6 @@ class FeatureEngineering:
 
         if save:
             np.savetxt("trainData.csv", self.__allDesc, delimiter=',', newline='\n')
-
-        # Call SVM
 
     def processMatrix(self, path, file, i, claz):
         img = cv2.imread(join(path, file), 0)

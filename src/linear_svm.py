@@ -4,14 +4,13 @@ import tensorflow as tf
 
 tf.app.flags.DEFINE_string('train', None, 'path to file having the training data')
 tf.app.flags.DEFINE_integer('ne', 1, 'total number of epochs')
-tf.app.flags.DEFINE_bool('verbose', False, 'enable verbose logging')
-tf.app.flags.DEFINE_integer('svmC', 1, 'svm c parameter for itd cost function')
+tf.app.flags.DEFINE_bool('verbose', True, 'enable verbose logging')
+tf.app.flags.DEFINE_integer('svmC', 10, 'svm c parameter for itd cost function')
 
 
 class SVM:
     def __init__(self, flags):
         self.__flags = flags
-
         self.__trainData = None
         self.__trainLabels = None
         self.__trainFeatures = None
@@ -26,8 +25,8 @@ class SVM:
         x = tf.placeholder("float", shape=[None, self.__trainFeatures])
         y = tf.placeholder("float", shape=[None, 1])
 
-        W = tf.Variable(tf.zeros([self.__trainFeatures, 1]))
-        b = tf.Variable(tf.zeros([1]))
+        W = tf.Variable(tf.zeros([self.__trainFeatures, 1]), name='weights')
+        b = tf.Variable(tf.zeros([1]), name='biases')
         y_raw = tf.matmul(x, W) + b
 
         regularization_loss = 0.5 * tf.reduce_sum(tf.square(W))
@@ -48,14 +47,14 @@ class SVM:
 
             for step in iter(range(self.__flags.ne * self.__trainSize // BATCH_SIZE)):
                 if verbose:
-                    print(step, end=":  ")
+                    print(step)
 
                 offset = (step * BATCH_SIZE) % self.__trainSize
                 batch_data = self.__trainData[offset:(offset + BATCH_SIZE), :]
                 batch_labels = self.__trainLabels[offset:(offset + BATCH_SIZE)]
                 train_step.run(feed_dict={x: batch_data, y: batch_labels})
                 print('loss: ', svm_loss.eval(feed_dict={x: batch_data, y: batch_labels}))
-
+                print('labels: ', batch_labels)
                 if verbose and offset >= self.__trainSize - BATCH_SIZE:
                     pass
 
